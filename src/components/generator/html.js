@@ -325,7 +325,8 @@ export function makeUpHtml(conf, type) {
   confGlobal = conf
   someSpanIsNot24 = conf.fields.some(item => item.span !== 24)
   conf.fields.forEach(el => {
-    htmlList.push(layouts[el.layout](el))
+    console.log('layouts[el.layout](el):', layouts[el.layout](el));
+    htmlList.push(layouts[el.layout](el)) //行容器
   })
   const htmlStr = htmlList.join('\n')
 

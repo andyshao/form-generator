@@ -6,6 +6,10 @@ import '@/icons'
 
 Vue.config.productionTip = false
 
+Vue.prototype.$debug = function(title, message) {
+	console.log('Debug log output: %s >>>> %o', title, message);
+}
+
 new Vue({
   router,
   render: h => h(App)
