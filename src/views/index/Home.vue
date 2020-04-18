@@ -1,3 +1,4 @@
+
 <template>
 	<div class="container">
 		<div class="left-board">
@@ -15,78 +16,33 @@
 			</div>
 			<el-scrollbar class="left-scrollbar">
 				<div class="components-list">
-					<div class="components-title">
-						<svg-icon icon-class="component" />输入型组件
-					</div>
-					<draggable
-						class="components-draggable"
-						:list="inputComponents"
-						:group="{ name: 'componentsGroup', pull: 'clone', put: false }"
-						:clone="cloneComponent"
-						draggable=".components-item"
-						:sort="false"
-						@end="onEnd"
-					>
-						<div
-							v-for="(element, index) in inputComponents"
-							:key="index"
-							class="components-item"
-							@click="addComponent(element)"
-						>
-							<div class="components-body">
-								<svg-icon :icon-class="element.tagIcon" />
-								{{ element.label }}
-							</div>
+					<div v-for="(item, listIndex) in leftComponents" :key="listIndex">
+						<div class="components-title">
+							<svg-icon icon-class="component" />
+							{{ item.title }}
 						</div>
-					</draggable>
-					<div class="components-title">
-						<svg-icon icon-class="component" />选择型组件
-					</div>
-					<draggable
-						class="components-draggable"
-						:list="selectComponents"
-						:group="{ name: 'componentsGroup', pull: 'clone', put: false }"
-						:clone="cloneComponent"
-						draggable=".components-item"
-						:sort="false"
-						@end="onEnd"
-					>
-						<div
-							v-for="(element, index) in selectComponents"
-							:key="index"
-							class="components-item"
-							@click="addComponent(element)"
+						<draggable
+							class="components-draggable"
+							:list="item.list"
+							:group="{ name: 'componentsGroup', pull: 'clone', put: false }"
+							:clone="cloneComponent"
+							draggable=".components-item"
+							:sort="false"
+							@end="onEnd"
 						>
-							<div class="components-body">
-								<svg-icon :icon-class="element.tagIcon" />
-								{{ element.label }}
+							<div
+								v-for="(element, index) in item.list"
+								:key="index"
+								class="components-item"
+								@click="addComponent(element)"
+							>
+								<div class="components-body">
+									<svg-icon :icon-class="element.__config__.tagIcon" />
+									{{ element.__config__.label }}
+								</div>
 							</div>
-						</div>
-					</draggable>
-					<div class="components-title">
-						<svg-icon icon-class="component" />布局型组件
+						</draggable>
 					</div>
-					<draggable
-						class="components-draggable"
-						:list="layoutComponents"
-						:group="{ name: 'componentsGroup', pull: 'clone', put: false }"
-						:clone="cloneComponent"
-						draggable=".components-item"
-						:sort="false"
-						@end="onEnd"
-					>
-						<div
-							v-for="(element, index) in layoutComponents"
-							:key="index"
-							class="components-item"
-							@click="addComponent(element)"
-						>
-							<div class="components-body">
-								<svg-icon :icon-class="element.tagIcon" />
-								{{ element.label }}
-							</div>
-						</div>
-					</draggable>
 				</div>
 			</el-scrollbar>
 		</div>
@@ -94,6 +50,7 @@
 		<div class="center-board">
 			<div class="action-bar">
 				<el-button icon="el-icon-video-play" type="text" @click="run">运行</el-button>
+				<el-button icon="el-icon-view" type="text" @click="showJson">查看json</el-button>
 				<el-button icon="el-icon-download" type="text" @click="download">导出vue文件</el-button>
 				<el-button class="copy-btn-main" icon="el-icon-document-copy" type="text" @click="copy">复制代码</el-button>
 				<el-button class="delete-btn" icon="el-icon-delete" type="text" @click="empty">清空</el-button>
@@ -139,6 +96,12 @@
 			size="100%"
 			:generate-conf="generateConf"
 		/>
+		<json-drawer
+			size="60%"
+			:visible.sync="jsonDrawerVisible"
+			:json-str="JSON.stringify(formData)"
+			@refresh="refreshJson"
+		/>
 		<code-type-dialog
 			:visible.sync="dialogVisible"
 			title="选择生成类型"
@@ -151,11 +114,13 @@
 
 <script>
 import draggable from 'vuedraggable'
+import { debounce } from 'throttle-debounce'
 import { saveAs } from 'file-saver'
 import beautifier from 'beautifier'
 import ClipboardJS from 'clipboard'
-import render from '@/components/render'
+import render from '@/components/render/render'
 import FormDrawer from './FormDrawer'
+import JsonDrawer from './JsonDrawer'
 import RightPanel from './RightPanel'
 import {
 	inputComponents, selectComponents, layoutComponents, formConf
@@ -188,6 +153,7 @@ export default {
 		draggable,
 		render,
 		FormDrawer,
+		JsonDrawer,
 		RightPanel,
 		CodeTypeDialog,
 		DraggableItem
@@ -207,19 +173,36 @@ export default {
 			drawerVisible: false,
 			formData: {},
 			dialogVisible: false,
+			jsonDrawerVisible: false,
 			generateConf: null,
 			showFileName: false,
-			activeData: drawingDefalut[0]
+			activeData: drawingDefalut[0],
+			saveDrawingListDebounce: debounce(340, saveDrawingList),
+			saveIdGlobalDebounce: debounce(340, saveIdGlobal),
+			leftComponents: [
+				{
+					title: '输入型组件',
+					list: inputComponents
+				},
+				{
+					title: '选择型组件',
+					list: selectComponents
+				},
+				{
+					title: '布局型组件',
+					list: layoutComponents
+				}
+			]
 		}
 	},
 	computed: {
 	},
 	watch: {
 		// eslint-disable-next-line func-names
-		'activeData.label': function (val, oldVal) {
+		'activeData.__config__.label': function (val, oldVal) {
 			if (
 				this.activeData.placeholder === undefined
-				|| !this.activeData.tag
+				|| !this.activeData.__config__.tag
 				|| oldActiveId !== this.activeId
 			) {
 				return
@@ -228,7 +211,6 @@ export default {
 		},
 		activeId: {
 			handler(val) {
-				this.$debug('activeId', val)
 				oldActiveId = val
 			},
 			immediate: true //立即执行handler方法
@@ -236,14 +218,14 @@ export default {
 		drawingList: {
 			handler(val) {
 				//保存到本地缓存中
-				saveDrawingList(val)
+				this.saveDrawingListDebounce(val)
 				if (val.length === 0) this.idGlobal = 100
 			},
 			deep: true //是否深度监听
 		},
 		idGlobal: {
 			handler(val) {
-				saveIdGlobal(val)
+				this.saveIdGlobalDebounce(val)
 			},
 			immediate: true
 		}
@@ -253,11 +235,9 @@ export default {
 		if (Array.isArray(drawingListInDB) && drawingListInDB.length > 0) {
 			this.drawingList = drawingListInDB
 		} else {
-			this.drawingList = drawingDefalut //加载默认
+			this.drawingList = drawingDefalut
 		}
-		//默认选中第一个Widget
 		this.activeFormItem(this.drawingList[0])
-
 		//默认加载本地缓存中的Form属性
 		if (formConfInDB) {
 			this.formConf = formConfInDB
@@ -287,13 +267,13 @@ export default {
 		 */
 		activeFormItem(element) {
 			this.activeData = element
-			this.activeId = element.formId
+			this.activeId = element.__config__.formId
 		},
 		/**
 		 * @Date: 2020-04-17 17:22:26
 		 * @Desc: 拖拽结束事件回调
 		 */
-		onEnd(obj, a) {
+		onEnd(obj) {
 			//判断是否拖拽到Board，而不是在Components中
 			if (obj.from !== obj.to) {
 				this.activeData = tempActiveData //设置当前拖拽组件对象
@@ -316,30 +296,23 @@ export default {
 		 */
 		cloneComponent(origin) {
 			const clone = JSON.parse(JSON.stringify(origin))
+			const config = clone.__config__
 			//设置克隆Widget ID 自增
-			clone.formId = ++this.idGlobal
-
+			config.formId = ++this.idGlobal
 			//设置默认栅格布局span值，继承自Form
-			clone.span = formConf.span
-
+			config.span = formConf.span
 			//设置widget 唯一标示
-			clone.renderKey = +new Date() // 改变renderKey后可以实现强制更新组件
-
-			//判断是否是布局型组件
-			if (!clone.layout) clone.layout = 'colFormItem' //设置为块级组件
-			this.$debug('cloneComponent clone', clone);
+			config.renderKey = +new Date() // 改变renderKey后可以实现强制更新组件
 
 			//如果是块级组件
-			if (clone.layout === 'colFormItem') {
-				clone.vModel = `field${this.idGlobal}` //设置节点标识
-				clone.placeholder !== undefined && (clone.placeholder += clone.label) //设置默认占位提示
-				tempActiveData = clone
-			} else if (clone.layout === 'rowFormItem') { //如果是行内组件
-				delete clone.label //移除标题，因为row组件不需要展示
-				clone.componentName = `row${this.idGlobal}` //设置组件标识
-				clone.gutter = this.formConf.gutter //继承表单分栏间隔
-				tempActiveData = clone
+			if (config.layout === 'colFormItem') {
+				clone.__vModel__ = `field${this.idGlobal}` //设置节点标识
+				clone.placeholder !== undefined && (clone.placeholder += config.label) //设置默认占位提示
+			} else if (config.layout === 'rowFormItem') { //如果是行内组件
+				config.componentName = `row${this.idGlobal}` //设置组件标识
+				config.gutter = this.formConf.gutter //继承表单分栏间隔
 			}
+			tempActiveData = clone
 			return tempActiveData
 		},
 		/**
@@ -347,12 +320,11 @@ export default {
 		 * @Desc: 处理表单Layout数据
 		 * @return JSON
 		 */
-		assembleFormData() {
+		AssembleFormData() {
 			this.formData = {
 				fields: JSON.parse(JSON.stringify(this.drawingList)),
 				...this.formConf
 			}
-			this.$debug('assembleFormData', JSON.stringify(this.formData));
 		},
 		/**
 		 * @Date: 2020-04-17 17:34:09
@@ -368,7 +340,7 @@ export default {
 		 * @Desc: 运行
 		 */
 		execRun(data) {
-			this.assembleFormData()
+			this.AssembleFormData()
 			this.drawerVisible = true
 		},
 		/**
@@ -415,16 +387,16 @@ export default {
 		 * @return [Object] 新组件对象
 		 */
 		createIdAndKey(item) {
-			item.formId = ++this.idGlobal
-			item.renderKey = +new Date()
-			if (item.layout === 'colFormItem') {
-				item.vModel = `field${this.idGlobal}`
-			} else if (item.layout === 'rowFormItem') {
-				item.componentName = `row${this.idGlobal}`
+			const config = item.__config__
+			config.formId = ++this.idGlobal
+			config.renderKey = +new Date()
+			if (config.layout === 'colFormItem') {
+				item.__vModel__ = `field${this.idGlobal}`
+			} else if (config.layout === 'rowFormItem') {
+				config.componentName = `row${this.idGlobal}`
 			}
-			//遍历子组件，深度更新
-			if (Array.isArray(item.children)) {
-				item.children = item.children.map(childItem => this.createIdAndKey(childItem))
+			if (Array.isArray(config.children)) {
+				config.children = config.children.map(childItem => this.createIdAndKey(childItem))
 			}
 			return item
 		},
@@ -448,11 +420,15 @@ export default {
 		 */
 		generateCode() {
 			const { type } = this.generateConf //是页面 or Dialog
-			this.assembleFormData() //获取布局JSON
+			this.AssembleFormData()
 			const script = vueScript(makeUpJs(this.formData, type))
 			const html = vueTemplate(makeUpHtml(this.formData, type))
 			const css = cssStyle(makeUpCss(this.formData))
 			return beautifier.html(html + script + css, beautifierConf.html)
+		},
+		showJson() {
+			this.AssembleFormData()
+			this.jsonDrawerVisible = true
 		},
 		/**
 		 * @Date: 2020-04-17 17:28:32
@@ -487,19 +463,22 @@ export default {
 		 */
 		tagChange(newTag) {
 			newTag = this.cloneComponent(newTag)
-			newTag.vModel = this.activeData.vModel
-			newTag.formId = this.activeId
-			newTag.span = this.activeData.span
-			delete this.activeData.tag
-			delete this.activeData.tagIcon
-			delete this.activeData.document
-			//更新对应属性
+			const config = newTag.__config__
+			newTag.__vModel__ = this.activeData.__vModel__
+			config.formId = this.activeId
+			config.span = this.activeData.__config__.span
+			this.activeData.__config__.tag = config.tag
+			this.activeData.__config__.tagIcon = config.tagIcon
+			this.activeData.__config__.document = config.document
+			if (typeof this.activeData.__config__.defaultValue === typeof config.defaultValue) {
+				config.defaultValue = this.activeData.__config__.defaultValue
+			}
 			Object.keys(newTag).forEach(key => {
-				if (this.activeData[key] !== undefined
-					&& typeof this.activeData[key] === typeof newTag[key]) {
+				if (this.activeData[key] !== undefined) {
 					newTag[key] = this.activeData[key]
 				}
 			})
+			console.log(newTag)
 			this.activeData = newTag
 			this.updateDrawingList(newTag, this.drawingList)
 		},
@@ -508,14 +487,20 @@ export default {
 		 * @Desc:  更新Layout中指定组件属性
 		 */
 		updateDrawingList(newTag, list) {
-			const index = list.findIndex(item => item.formId === this.activeId)
+			const index = list.findIndex(item => item.__config__.formId === this.activeId)
 			if (index > -1) {
 				list.splice(index, 1, newTag)
 			} else {
 				list.forEach(item => {
-					if (Array.isArray(item.children)) this.updateDrawingList(newTag, item.children)
+					if (Array.isArray(item.__config__.children)) this.updateDrawingList(newTag, item.__config__.children)
 				})
 			}
+		},
+		refreshJson(data) {
+			this.drawingList = JSON.parse(JSON.stringify(data.fields))
+			delete data.fields
+			this.formConf = data
+			console.log(this.drawingList, this.formConf)
 		}
 	}
 }
