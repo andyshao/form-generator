@@ -3,8 +3,11 @@ import App from './App.vue'
 import router from '@/router'
 import '@/styles/index.scss'
 import '@/icons'
+import LwcPadding from '@/components/demo/Padding'
 
 Vue.config.productionTip = false
+
+Vue.component('lwc-padding', LwcPadding)
 
 Vue.prototype.$debug = function(title, message) {
 	console.log('Debug log output: %s >>>> %o', title, message);

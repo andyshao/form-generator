@@ -13,6 +13,9 @@ const ruleTrigger = {
   'el-rate': 'change'
 }
 
+/**
+ * @Desc: 渲染表单
+ */
 function renderFrom(h) {
   const { formConfCopy } = this
 
@@ -35,6 +38,10 @@ function renderFrom(h) {
   )
 }
 
+/**
+ * @Desc: 渲染按钮
+ * @param h [createElement 的别名]
+ */
 function formBtns(h) {
   return <el-col>
     <el-form-item size="large">
@@ -44,6 +51,11 @@ function formBtns(h) {
   </el-col>
 }
 
+/**
+ * @Desc: 渲染表单子项
+ * @param h [createElement 的别名]
+ * @param elementList [子组件列表]
+ */
 function renderFormItem(h, elementList) {
   return elementList.map(scheme => {
     const config = scheme.__config__
@@ -62,8 +74,16 @@ function renderChildren(h, scheme) {
   return renderFormItem.call(this, h, config.children)
 }
 
+/**
+ * @Desc: 布局组件 StatelessWidget
+ */
 const layouts = {
+	/**
+	 * @Desc: 块级表单子项 引入render.js,处理数据
+	 * @param scheme [widget object]
+	 */
   colFormItem(h, scheme) {
+	  console.log('colFormItem:', scheme);
     const config = scheme.__config__
     let labelWidth = config.labelWidth ? `${config.labelWidth}px` : null
     if (config.showLabel === false) labelWidth = '0'
@@ -79,8 +99,12 @@ const layouts = {
       </el-col>
     )
   },
+  /**
+	 * @Desc: 行级表单子项
+	 * @param scheme [widget object]
+	 */
   rowFormItem(h, scheme) {
-    let child = renderChildren.apply(this, arguments)
+    let child = renderChildren.apply(this, arguments) //处理子widget渲染
     if (scheme.type === 'flex') {
       child = <el-row type={scheme.type} justify={scheme.justify} align={scheme.align}>
               {child}
@@ -93,7 +117,15 @@ const layouts = {
         </el-row>
       </el-col>
     )
-  }
+  },
+  layoutWidget(h, scheme) {
+		let child = renderChildren.apply(this, arguments) //处理子widget渲染
+		return (
+			<lwc-padding top={scheme.top}>
+			{child}
+			</lwc-padding>
+		);
+	}
 }
 
 export default {
@@ -107,49 +139,87 @@ export default {
     }
   },
   data() {
+	  //初始化传入表单配置参数
     const data = {
       formConfCopy: JSON.parse(JSON.stringify(this.formConf)),
       [this.formConf.formModel]: {},
       [this.formConf.formRules]: {}
-    }
+	}
+
+	//初始化表单数据
     this.initFormData(data.formConfCopy.fields, data[this.formConf.formModel])
-    this.buildRules(data.formConfCopy.fields, data[this.formConf.formRules])
+	this.buildRules(data.formConfCopy.fields, data[this.formConf.formRules])
     return data
   },
   methods: {
+	  /**
+	   * @Desc: 初始化表单
+	   * @param componentList [子Widget列表]
+	   * @param formData [表单默认数据]
+	   */
     initFormData(componentList, formData) {
       componentList.forEach(cur => {
         const config = cur.__config__
         if (cur.__vModel__) formData[cur.__vModel__] = config.defaultValue
         if (config.children) this.initFormData(config.children, formData)
       })
-    },
+	},
+	/**
+	 * @Desc: 处理表单验证规则
+	  * @param componentList [子Widget列表]
+	  * @param rules [规则列表]
+	 */
     buildRules(componentList, rules) {
       componentList.forEach(cur => {
-        const config = cur.__config__
+		const config = cur.__config__
+
+		//是否有验证规则
         if (Array.isArray(config.regList)) {
+
+			//如果是必填项, 则默认用占位符内容提示
           if (config.required) {
-            const required = { required: config.required, message: cur.placeholder }
+			  /**
+			   * const 声明时，允许指向内存地址不改动而更新值，所以可以更新 Array、Object 中属性
+			   * 以下代码运行成功
+			   * const a = {k: 1}
+			   * a.k = 2
+			   *
+			   * 以下代码运行失败 TypeError: Assignment to constant variable.
+			   * a = {k: 2}
+			   */
+			const required = { required: config.required, message: cur.placeholder }
+			//判断是否为多选，array
             if (Array.isArray(config.defaultValue)) {
               required.type = 'array'
               required.message = `请至少选择一个${config.label}`
-            }
-            required.message === undefined && (required.message = `${config.label}不能为空`)
+			}
+			required.message === undefined && (required.message = `${config.label}不能为空`)
+
             config.regList.push(required)
-          }
+		  }
+
+		  //组装验证规则，设置触发方式
           rules[cur.__vModel__] = config.regList.map(item => {
             item.pattern && (item.pattern = eval(item.pattern))
             item.trigger = ruleTrigger && ruleTrigger[config.tag]
             return item
-          })
-        }
+		  })
+		}
+
+		//继续处理子级规则
         if (config.children) this.buildRules(config.children, rules)
       })
-    },
+	},
+	/**
+	 * @Desc: 重置表单
+	 */
     resetForm() {
       this.formConfCopy = JSON.parse(JSON.stringify(this.formConf))
       this.$refs[this.formConf.formRef].resetFields()
-    },
+	},
+	/**
+	 * @Desc: 提交表单
+	 */
     submitForm() {
       this.$refs[this.formConf.formRef].validate(valid => {
         if (!valid) return false

@@ -311,6 +311,8 @@ export default {
 			} else if (config.layout === 'rowFormItem') { //如果是行内组件
 				config.componentName = `row${this.idGlobal}` //设置组件标识
 				config.gutter = this.formConf.gutter //继承表单分栏间隔
+			} else if (config.layout === 'layoutWidget') {
+				config.componentName = `padding${this.idGlobal}` //设置组件标识
 			}
 			tempActiveData = clone
 			return tempActiveData
@@ -320,7 +322,7 @@ export default {
 		 * @Desc: 处理表单Layout数据
 		 * @return JSON
 		 */
-		AssembleFormData() {
+		assembleFormData() {
 			this.formData = {
 				fields: JSON.parse(JSON.stringify(this.drawingList)),
 				...this.formConf
@@ -340,7 +342,7 @@ export default {
 		 * @Desc: 运行
 		 */
 		execRun(data) {
-			this.AssembleFormData()
+			this.assembleFormData()
 			this.drawerVisible = true
 		},
 		/**
@@ -420,14 +422,14 @@ export default {
 		 */
 		generateCode() {
 			const { type } = this.generateConf //是页面 or Dialog
-			this.AssembleFormData()
+			this.assembleFormData()
 			const script = vueScript(makeUpJs(this.formData, type))
 			const html = vueTemplate(makeUpHtml(this.formData, type))
 			const css = cssStyle(makeUpCss(this.formData))
 			return beautifier.html(html + script + css, beautifierConf.html)
 		},
 		showJson() {
-			this.AssembleFormData()
+			this.assembleFormData()
 			this.jsonDrawerVisible = true
 		},
 		/**

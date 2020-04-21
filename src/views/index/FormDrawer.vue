@@ -214,7 +214,9 @@ export default {
               scripts: this.scripts,
               links: this.links
             }
-          }
+		  }
+
+		  this.$debug('runCode postData', postData);
 
           this.$refs.previewPage.contentWindow.postMessage(
             postData,

@@ -1,0 +1,78 @@
+src
+├─views
+|   ├─preview
+|   |    └main.js
+|   ├─index
+|   |   ├─App.vue
+|   |   ├─CodeTypeDialog.vue
+|   |   ├─DraggableItem.vue
+|   |   ├─FormDrawer.vue
+|   |   ├─Home.vue
+|   |   ├─IconsDialog.vue
+|   |   ├─JsonDrawer.vue
+|   |   ├─ResourceDialog.vue
+|   |   ├─RightPanel.vue
+|   |   ├─TreeNodeDialog.vue
+|   |   └main.js
+├─utils
+|   ├─db.js
+|   ├─icon.json
+|   ├─index.js
+|   ├─loadScript.js
+|   └package.json
+├─styles
+|   ├─home.scss
+|   ├─index.scss
+|   └mixin.scss
+├─router
+|   └index.js
+├─icons
+|   ├─index.js
+|   ├─svg
+|   |  ├─cascader.svg
+|   |  ├─checkbox.svg
+|   |  ├─color.svg
+|   |  ├─component.svg
+|   |  ├─date-range.svg
+|   |  ├─date.svg
+|   |  ├─input.svg
+|   |  ├─number.svg
+|   |  ├─password.svg
+|   |  ├─radio.svg
+|   |  ├─rate.svg
+|   |  ├─row.svg
+|   |  ├─select.svg
+|   |  ├─slider.svg
+|   |  ├─switch.svg
+|   |  ├─textarea.svg
+|   |  ├─time-range.svg
+|   |  ├─time.svg
+|   |  └upload.svg
+├─components
+|     ├─render
+|     |   ├─package.json
+|     |   └render.js
+|     ├─parser
+|     |   ├─Parser.vue
+|     |   ├─README.md
+|     |   ├─index.js
+|     |   ├─package.json
+|     |   ├─example
+|     |   |    ├─Index.vue
+|     |   |    ├─mock
+|     |   |    |  ├─all.js
+|     |   |    |  ├─default.js
+|     |   |    |  └test.js
+|     ├─generator
+|     |     ├─config.js
+|     |     ├─css.js
+|     |     ├─drawingDefalut.js
+|     |     ├─html.js
+|     |     ├─js.js
+|     |     └ruleTrigger.js
+|     ├─demo
+|     |  └Padding.vue
+|     ├─SvgIcon
+|     |    └index.vue
+├─assets
+|   └logo.png

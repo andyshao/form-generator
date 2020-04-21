@@ -145,6 +145,12 @@
           <el-form-item v-if="isShowStep" label="步长">
             <el-input-number v-model="activeData.step" placeholder="步数" />
           </el-form-item>
+
+			<el-form-item label="上边距">
+            <el-input-number v-model="activeData.top" placeholder="上边距" />
+          </el-form-item>
+
+
           <el-form-item v-if="activeData.__config__.tag === 'el-input-number'" label="精度">
             <el-input-number v-model="activeData.precision" :min="0" placeholder="精度" />
           </el-form-item>
@@ -694,7 +700,8 @@ export default {
       ],
       layoutTreeProps: {
         label(data, node) {
-          const config = data.__config__
+		  const config = data.__config__
+		  console.log('config', config);
           return data.componentName || `${config.label}: ${data.__vModel__}`
         }
       }
