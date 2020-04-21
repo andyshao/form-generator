@@ -4,6 +4,7 @@ import router from '@/router'
 import '@/styles/index.scss'
 import '@/icons'
 import LwcPadding from '@/components/demo/Padding'
+import '@/styles/tailwindcss.css';
 
 Vue.config.productionTip = false
 

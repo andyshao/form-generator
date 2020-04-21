@@ -140,7 +140,7 @@ import DraggableItem from './DraggableItem'
 import {
 	getDrawingList, saveDrawingList, getIdGlobal, saveIdGlobal, getFormConf
 } from '@/utils/db'
-
+import * as DESIGN_PROPERTIES from '@/config/design_properties.js';
 const emptyActiveData = { style: {}, autosize: {} }
 let oldActiveId
 let tempActiveData //当前操作Widget
@@ -304,18 +304,36 @@ export default {
 			//设置widget 唯一标示
 			config.renderKey = +new Date() // 改变renderKey后可以实现强制更新组件
 
-			//如果是块级组件
-			if (config.layout === 'colFormItem') {
-				clone.__vModel__ = `field${this.idGlobal}` //设置节点标识
-				clone.placeholder !== undefined && (clone.placeholder += config.label) //设置默认占位提示
-			} else if (config.layout === 'rowFormItem') { //如果是行内组件
-				config.componentName = `row${this.idGlobal}` //设置组件标识
-				config.gutter = this.formConf.gutter //继承表单分栏间隔
-			} else if (config.layout === 'layoutWidget') {
-				config.componentName = `padding${this.idGlobal}` //设置组件标识
+			switch(config.layout) {
+				case DESIGN_PROPERTIES.LAYOUT_TYPE_COL_FORM_ITEM:
+					clone.__vModel__ = `field${this.idGlobal}` //设置节点标识
+					clone.placeholder !== undefined && (clone.placeholder += config.label) //设置默认占位提示
+					break;
+				case DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_FORM_ITEM:
+					config.componentName = `row${this.idGlobal}` //设置组件标识
+					config.gutter = this.formConf.gutter //继承表单分栏间隔
+					break;
+				case DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_DEFAULT_ITEM:
+					config.componentName = `padding${this.idGlobal}` //设置组件标识
+					break;
+				default:
+					console.log('未找到对应组件')
 			}
+
 			tempActiveData = clone
 			return tempActiveData
+			//如果是块级组件
+			// if (config.layout === 'colFormItem') {
+			// 	clone.__vModel__ = `field${this.idGlobal}` //设置节点标识
+			// 	clone.placeholder !== undefined && (clone.placeholder += config.label) //设置默认占位提示
+			// } else if (config.layout === 'rowFormItem') { //如果是行内组件
+			// 	config.componentName = `row${this.idGlobal}` //设置组件标识
+			// 	config.gutter = this.formConf.gutter //继承表单分栏间隔
+			// } else if (config.layout === 'layoutWidget') {
+			// 	config.componentName = `padding${this.idGlobal}` //设置组件标识
+			// }
+			// tempActiveData = clone
+			// return tempActiveData
 		},
 		/**
 		 * @Date: 2020-04-17 17:37:33

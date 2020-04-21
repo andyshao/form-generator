@@ -1,10 +1,10 @@
 <template>
-  <!-- <div class="test-form">
+  <div class="test-form">
     <parser :form-conf="formConf" @submit="sumbitForm2" />
-  </div> -->
-  <lwc-padding :top="20" :right="20" :bottom="20" :left="20">
+  </div>
+  <!-- <lwc-padding :top="20" :right="20" :bottom="20" :left="20">
     <parser :form-conf="formConf" @submit="sumbitForm1" />
-  </lwc-padding>
+  </lwc-padding> -->
 </template>
 
 <script>

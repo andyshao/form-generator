@@ -1,5 +1,6 @@
 <script>
 import render from '@/components/render/render.js'
+import * as DESIGN_PROPERTIES from '@/config/design_properties.js';
 
 const ruleTrigger = {
   'el-input': 'blur',
@@ -82,8 +83,7 @@ const layouts = {
 	 * @Desc: 块级表单子项 引入render.js,处理数据
 	 * @param scheme [widget object]
 	 */
-  colFormItem(h, scheme) {
-	  console.log('colFormItem:', scheme);
+  [DESIGN_PROPERTIES.LAYOUT_TYPE_COL_FORM_ITEM]: function(h, scheme) {
     const config = scheme.__config__
     let labelWidth = config.labelWidth ? `${config.labelWidth}px` : null
     if (config.showLabel === false) labelWidth = '0'
@@ -103,27 +103,30 @@ const layouts = {
 	 * @Desc: 行级表单子项
 	 * @param scheme [widget object]
 	 */
-  rowFormItem(h, scheme) {
-    let child = renderChildren.apply(this, arguments) //处理子widget渲染
+  [DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_FORM_ITEM]: function(h, scheme) {
+	  const config = scheme.__config__
+	let child = renderChildren.apply(this, arguments) //处理子widget渲染
     if (scheme.type === 'flex') {
       child = <el-row type={scheme.type} justify={scheme.justify} align={scheme.align}>
               {child}
             </el-row>
     }
     return (
-      <el-col span={scheme.span}>
-        <el-row gutter={scheme.gutter}>
+      <el-col span={config.span}>
+        <el-row gutter={config.gutter}>
           {child}
         </el-row>
       </el-col>
     )
   },
-  layoutWidget(h, scheme) {
+  [DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_DEFAULT_ITEM]: function(h, scheme) {
 		let child = renderChildren.apply(this, arguments) //处理子widget渲染
 		return (
-			<lwc-padding top={scheme.top}>
-			{child}
-			</lwc-padding>
+			<el-col>
+				<lwc-padding top={scheme.top} right={scheme.right} bottom={scheme.bottom} left={scheme.left}>
+				{child}
+				</lwc-padding>
+			</el-col>
 		);
 	}
 }

@@ -33,6 +33,7 @@ export default {
 	},
 	computed: {
 		styleObj() {
+			console.log('this.top', this.top);
 			return {
 				'padding-top': this.top + 'px',
 				'padding-right': this.right + 'px',

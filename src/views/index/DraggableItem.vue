@@ -1,7 +1,7 @@
 <script>
 import draggable from 'vuedraggable'
 import render from '@/components/render/render'
-
+import * as DESIGN_PROPERTIES from '@/config/design_properties.js';
 const components = {
 	itemBtns(h, element, index, parent) {
 		const { copyItem, deleteItem } = this.$listeners
@@ -20,7 +20,7 @@ const components = {
 	}
 }
 const layouts = {
-	colFormItem(h, element, index, parent) {
+	[DESIGN_PROPERTIES.LAYOUT_TYPE_COL_FORM_ITEM]: function(h, element, index, parent) {
 		const { activeItem } = this.$listeners
 		const config = element.__config__
 		let className = this.activeId === config.formId ? 'drawing-item active-from-item' : 'drawing-item'
@@ -40,7 +40,7 @@ const layouts = {
 			</el-col>
 		)
 	},
-	rowFormItem(h, element, index, parent) {
+	[DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_FORM_ITEM]: function(h, element, index, parent) {
 		const { activeItem } = this.$listeners
 		const className = this.activeId === element.__config__.formId
 			? 'drawing-row-item active-from-item'
@@ -64,20 +64,22 @@ const layouts = {
 			</el-col>
 		)
 	},
-	layoutWidget(h, element, index, parent) {
+	[DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_DEFAULT_ITEM]: function(h, element, index, parent) {
 		const { activeItem } = this.$listeners
 		let child = renderChildren.apply(this, arguments);
 		const className = this.activeId === element.__config__.formId
 			? 'drawing-row-item active-from-item'
 			: 'drawing-row-item'
 		return (
-			<lwc-padding class={className} nativeOnClick={event => { activeItem(element); event.stopPropagation() }}>
+			<el-col class={className} nativeOnClick={event => { activeItem(element); event.stopPropagation() }}>
 				<span class="component-name">{element.__config__.componentName}</span>
-				<draggable list={element.__config__.children} animation={340}>
-					{child}
-				</draggable>
+				<lwc-padding>
+					<draggable list={element.__config__.children} animation={340} group="componentsGroup" class="drag-wrapper">
+						{child}
+					</draggable>
+				</lwc-padding>
 				{components.itemBtns.apply(this, arguments)}
-			</lwc-padding>
+			</el-col>
 		);
 	}
 }
