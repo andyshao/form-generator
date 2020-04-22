@@ -2,7 +2,7 @@
   <div class="right-board">
     <el-tabs v-model="currentTab" class="center-tabs">
       <el-tab-pane label="组件属性" name="field" />
-      <el-tab-pane label="表单属性" name="form" />
+      <el-tab-pane label="页面属性" name="page" />
     </el-tabs>
     <div class="field-box">
       <a class="document-link" target="_blank" :href="documentLink" title="查看组件文档">
@@ -57,6 +57,27 @@
           <el-form-item v-if="activeData.__config__.layout==='rowFormItem'" label="栅格间隔">
             <el-input-number v-model="activeData.gutter" :min="0" placeholder="栅格间隔" />
           </el-form-item>
+			<el-form-item label="内边距" v-if="activeData.padding !==undefined">
+				<el-select v-model="activeData.padding" placeholder="请选择" :style="{width: '100%'}" clearable filterable>
+				<el-option
+					v-for="(item, index) in styleOptions.padding"
+					:key="index"
+					:label="item.value"
+					:value="item.label"
+				/>
+				</el-select>
+			</el-form-item>
+		  <el-form-item label="外边距" v-if="activeData.margin !==undefined">
+			  <el-select v-model="activeData.margin" placeholder="请选择" :style="{width: '100%'}" clearable filterable>
+              <el-option
+                v-for="(item, index) in styleOptions.margin"
+                :key="index"
+                :label="item.value"
+                :value="item.label"
+              />
+			  </el-select>
+          </el-form-item>
+
           <el-form-item v-if="activeData.__config__.layout==='rowFormItem'" label="布局模式">
             <el-radio-group v-model="activeData.type">
               <el-radio-button label="default" />
@@ -573,6 +594,47 @@
             </el-tree>
           </template>
 
+		  <!--表单组件时-->
+          <el-form-item label="表单名" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-input v-model="activeData.__config__.formRef" placeholder="请输入表单名（ref）" />
+          </el-form-item>
+          <!-- <el-form-item label="表单模型" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-input v-model="activeData.__config__.formModel" placeholder="请输入数据模型" />
+          </el-form-item> -->
+          <el-form-item label="校验模型" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-input v-model="activeData.__config__.formRules" placeholder="请输入校验模型" />
+          </el-form-item>
+          <el-form-item label="表单尺寸" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-radio-group v-model="activeData.size">
+              <el-radio-button label="medium">
+                中等
+              </el-radio-button>
+              <el-radio-button label="small">
+                较小
+              </el-radio-button>
+              <el-radio-button label="mini">
+                迷你
+              </el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="标签对齐" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-radio-group v-model="activeData.labelPosition">
+              <el-radio-button label="left">
+                左对齐
+              </el-radio-button>
+              <el-radio-button label="right">
+                右对齐
+              </el-radio-button>
+              <el-radio-button label="top">
+                顶部对齐
+              </el-radio-button>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item label="表单按钮" v-if="activeData.__config__.layout === 'formContainer'">
+            <el-switch v-model="activeData.formBtns" />
+          </el-form-item>
+
 		<!--表单组件时-->
           <template v-if="activeData.__config__.layout === 'colFormItem'">
             <el-divider>正则校验</el-divider>
@@ -600,56 +662,15 @@
         </el-form>
 
         <!-- 表单属性 -->
-        <el-form v-show="currentTab === 'form'" size="small" label-width="90px">
-          <el-form-item label="表单名">
-            <el-input v-model="formConf.formRef" placeholder="请输入表单名（ref）" />
-          </el-form-item>
-          <el-form-item label="表单模型">
-            <el-input v-model="formConf.formModel" placeholder="请输入数据模型" />
-          </el-form-item>
-          <el-form-item label="校验模型">
-            <el-input v-model="formConf.formRules" placeholder="请输入校验模型" />
-          </el-form-item>
-          <el-form-item label="表单尺寸">
-            <el-radio-group v-model="formConf.size">
-              <el-radio-button label="medium">
-                中等
-              </el-radio-button>
-              <el-radio-button label="small">
-                较小
-              </el-radio-button>
-              <el-radio-button label="mini">
-                迷你
-              </el-radio-button>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="标签对齐">
-            <el-radio-group v-model="formConf.labelPosition">
-              <el-radio-button label="left">
-                左对齐
-              </el-radio-button>
-              <el-radio-button label="right">
-                右对齐
-              </el-radio-button>
-              <el-radio-button label="top">
-                顶部对齐
-              </el-radio-button>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="标签宽度">
-            <el-input v-model.number="formConf.labelWidth" type="number" placeholder="请输入标签宽度" />
-          </el-form-item>
+        <el-form v-show="currentTab === 'page'" size="small" label-width="90px">
           <el-form-item label="栅格间隔">
-            <el-input-number v-model="formConf.gutter" :min="0" placeholder="栅格间隔" />
+            <el-input-number v-model="pageConf.gutter" :min="0" placeholder="栅格间隔" />
           </el-form-item>
-          <el-form-item label="禁用表单">
-            <el-switch v-model="formConf.disabled" />
+			 <el-form-item label="只读">
+            <el-switch v-model="pageConf.readonly" />
           </el-form-item>
-          <el-form-item label="表单按钮">
-            <el-switch v-model="formConf.formBtns" />
-          </el-form-item>
-          <el-form-item label="显示未选中组件边框">
-            <el-switch v-model="formConf.unFocusedComponentBorder" />
+          <el-form-item label="禁用">
+            <el-switch v-model="pageConf.disabled" />
           </el-form-item>
         </el-form>
       </el-scrollbar>
@@ -668,8 +689,8 @@ import IconsDialog from './IconsDialog'
 import {
   inputComponents, selectComponents, layoutComponents
 } from '@/components/generator/config'
-import { saveFormConf } from '@/utils/db'
-
+import { savePageConf } from '@/utils/db'
+import styleOptions from '@/utils/styleOptions'
 const dateTimeFormat = {
   date: 'yyyy-MM-dd',
   week: 'yyyy 第 WW 周',
@@ -680,20 +701,25 @@ const dateTimeFormat = {
   monthrange: 'yyyy-MM',
   datetimerange: 'yyyy-MM-dd HH:mm:ss'
 }
-
 export default {
   components: {
     TreeNodeDialog,
     IconsDialog
   },
-  props: ['showField', 'activeData', 'formConf'],
+  props: ['showField', 'activeData', 'pageConf'],
   data() {
+	  console.log('styleOptions', styleOptions)
     return {
       currentTab: 'field',
       currentNode: null,
       dialogVisible: false,
       iconsVisible: false,
-      currentIconModel: null,
+	  currentIconModel: null,
+	  styleOptions: styleOptions,
+	  containerOptions: [{
+		  label: '表单',
+		  value: 'form'
+	  }],
       dateTypeOptions: [
         {
           label: '日(date)',
@@ -828,9 +854,9 @@ export default {
     }
   },
   watch: {
-    formConf: {
+    pageConf: {
       handler(val) {
-        saveFormConf(val)
+        savePageConf(val)
       },
       deep: true
     }
@@ -936,7 +962,7 @@ export default {
       this.$set(this.activeData, 'format', val)
     },
     spanChange(val) {
-      this.formConf.span = val
+      this.pageConf.span = val
     },
     multipleChange(val) {
       this.$set(this.activeData.__config__, 'defaultValue', val ? [] : '')

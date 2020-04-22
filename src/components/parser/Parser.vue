@@ -106,6 +106,7 @@ const layouts = {
   [DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_FORM_ITEM]: function(h, scheme) {
 	  const config = scheme.__config__
 	let child = renderChildren.apply(this, arguments) //处理子widget渲染
+	const className = `${scheme.padding} ${scheme.margin}`;
     if (scheme.type === 'flex') {
       child = <el-row type={scheme.type} justify={scheme.justify} align={scheme.align}>
               {child}
@@ -113,7 +114,7 @@ const layouts = {
     }
     return (
       <el-col span={config.span}>
-        <el-row gutter={config.gutter}>
+        <el-row gutter={config.gutter} class={className}>
           {child}
         </el-row>
       </el-col>

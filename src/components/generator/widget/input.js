@@ -6,7 +6,7 @@ export default [
 			label: "单行文本",
 			labelWidth: null,
 			showLabel: true,
-			changeTag: false,
+			changeTag: true,
 			tag: "el-input",
 			tagIcon: "input",
 			defaultValue: undefined,

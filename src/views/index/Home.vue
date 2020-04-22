@@ -56,12 +56,10 @@
 				<el-button class="delete-btn" icon="el-icon-delete" type="text" @click="empty">清空</el-button>
 			</div>
 			<el-scrollbar class="center-scrollbar">
-				<el-row class="center-board-row" :gutter="formConf.gutter">
+				<el-row class="center-board-row">
 					<el-form
-						:size="formConf.size"
-						:label-position="formConf.labelPosition"
-						:disabled="formConf.disabled"
-						:label-width="formConf.labelWidth + 'px'"
+						:disabled="pageConf.disabled"
+						:readonly="pageConf.readonly"
 					>
 						<draggable class="drawing-board" :list="drawingList" :animation="340" group="componentsGroup">
 							<draggable-item
@@ -71,7 +69,6 @@
 								:element="element"
 								:index="index"
 								:active-id="activeId"
-								:form-conf="formConf"
 								@activeItem="activeFormItem"
 								@copyItem="drawingItemCopy"
 								@deleteItem="drawingItemDelete"
@@ -85,21 +82,21 @@
 
 		<right-panel
 			:active-data="activeData"
-			:form-conf="formConf"
+			:page-conf="pageConf"
 			:show-field="!!drawingList.length"
 			@tag-change="tagChange"
 		/>
 
 		<form-drawer
 			:visible.sync="drawerVisible"
-			:form-data="formData"
+			:form-data="pageData"
 			size="100%"
 			:generate-conf="generateConf"
 		/>
 		<json-drawer
 			size="60%"
 			:visible.sync="jsonDrawerVisible"
-			:json-str="JSON.stringify(formData)"
+			:json-str="JSON.stringify(pageData)"
 			@refresh="refreshJson"
 		/>
 		<code-type-dialog
@@ -123,7 +120,7 @@ import FormDrawer from './FormDrawer'
 import JsonDrawer from './JsonDrawer'
 import RightPanel from './RightPanel'
 import {
-	inputComponents, selectComponents, layoutComponents, formConf
+	inputComponents, selectComponents, layoutComponents, containerComponents, pageConf, tableComponents
 } from '@/components/generator/config'
 import {
 	exportDefault, beautifierConf, isNumberStr, titleCase
@@ -138,14 +135,15 @@ import logo from '@/assets/logo.png'
 import CodeTypeDialog from './CodeTypeDialog'
 import DraggableItem from './DraggableItem'
 import {
-	getDrawingList, saveDrawingList, getIdGlobal, saveIdGlobal, getFormConf
+	getDrawingList, saveDrawingList, getIdGlobal, saveIdGlobal, getPageConf
 } from '@/utils/db'
 import * as DESIGN_PROPERTIES from '@/config/design_properties.js';
 const emptyActiveData = { style: {}, autosize: {} }
 let oldActiveId
 let tempActiveData //当前操作Widget
 const drawingListInDB = getDrawingList()
-const formConfInDB = getFormConf()
+// const formConfInDB = getFormConf()
+const pageConfInDB = getPageConf()
 const idGlobal = getIdGlobal()  //全局Widget ID
 
 export default {
@@ -162,16 +160,18 @@ export default {
 		return {
 			logo,
 			idGlobal,
-			formConf,
+			pageConf,
 			inputComponents,
 			selectComponents,
 			layoutComponents,
+			containerComponents,
+			tableComponents,
 			labelWidth: 100,
-			drawingList: drawingDefalut,
+			drawingList: [],
 			drawingData: {},
 			activeId: drawingDefalut[0].formId,
 			drawerVisible: false,
-			formData: {},
+			pageData: {},
 			dialogVisible: false,
 			jsonDrawerVisible: false,
 			generateConf: null,
@@ -181,12 +181,20 @@ export default {
 			saveIdGlobalDebounce: debounce(340, saveIdGlobal),
 			leftComponents: [
 				{
+					title: '容器型组件',
+					list: containerComponents
+				},
+				{
 					title: '输入型组件',
 					list: inputComponents
 				},
 				{
 					title: '选择型组件',
 					list: selectComponents
+				},
+				{
+					title: '表格组件',
+					list: tableComponents
 				},
 				{
 					title: '布局型组件',
@@ -239,8 +247,8 @@ export default {
 		}
 		this.activeFormItem(this.drawingList[0])
 		//默认加载本地缓存中的Form属性
-		if (formConfInDB) {
-			this.formConf = formConfInDB
+		if (pageConfInDB) {
+			this.pageConf = pageConfInDB
 		}
 
 		//设置Copy监听
@@ -299,8 +307,6 @@ export default {
 			const config = clone.__config__
 			//设置克隆Widget ID 自增
 			config.formId = ++this.idGlobal
-			//设置默认栅格布局span值，继承自Form
-			config.span = formConf.span
 			//设置widget 唯一标示
 			config.renderKey = +new Date() // 改变renderKey后可以实现强制更新组件
 
@@ -311,39 +317,28 @@ export default {
 					break;
 				case DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_FORM_ITEM:
 					config.componentName = `row${this.idGlobal}` //设置组件标识
-					config.gutter = this.formConf.gutter //继承表单分栏间隔
 					break;
-				case DESIGN_PROPERTIES.LAYOUT_TYPE_ROW_DEFAULT_ITEM:
-					config.componentName = `padding${this.idGlobal}` //设置组件标识
+				case DESIGN_PROPERTIES.LAYOUT_TYPE_FORM_CONTAINER:
+					config.componentName = `${config.label}${this.idGlobal}` //设置组件标识
+					break;
+				case DESIGN_PROPERTIES.LAYOUT_TYPE_TABLE:
+					config.componentName = `${config.label}${this.idGlobal}` //设置组件标识
 					break;
 				default:
 					console.log('未找到对应组件')
 			}
-
 			tempActiveData = clone
 			return tempActiveData
-			//如果是块级组件
-			// if (config.layout === 'colFormItem') {
-			// 	clone.__vModel__ = `field${this.idGlobal}` //设置节点标识
-			// 	clone.placeholder !== undefined && (clone.placeholder += config.label) //设置默认占位提示
-			// } else if (config.layout === 'rowFormItem') { //如果是行内组件
-			// 	config.componentName = `row${this.idGlobal}` //设置组件标识
-			// 	config.gutter = this.formConf.gutter //继承表单分栏间隔
-			// } else if (config.layout === 'layoutWidget') {
-			// 	config.componentName = `padding${this.idGlobal}` //设置组件标识
-			// }
-			// tempActiveData = clone
-			// return tempActiveData
 		},
 		/**
 		 * @Date: 2020-04-17 17:37:33
 		 * @Desc: 处理表单Layout数据
 		 * @return JSON
 		 */
-		assembleFormData() {
-			this.formData = {
+		assemblePageData() {
+			this.pageData = {
 				fields: JSON.parse(JSON.stringify(this.drawingList)),
-				...this.formConf
+				...this.pageConf
 			}
 		},
 		/**
@@ -360,7 +355,7 @@ export default {
 		 * @Desc: 运行
 		 */
 		execRun(data) {
-			this.assembleFormData()
+			this.assemblePageData()
 			this.drawerVisible = true
 		},
 		/**
@@ -440,14 +435,14 @@ export default {
 		 */
 		generateCode() {
 			const { type } = this.generateConf //是页面 or Dialog
-			this.assembleFormData()
-			const script = vueScript(makeUpJs(this.formData, type))
-			const html = vueTemplate(makeUpHtml(this.formData, type))
-			const css = cssStyle(makeUpCss(this.formData))
+			this.assemblePageData()
+			const script = vueScript(makeUpJs(this.pageData, type))
+			const html = vueTemplate(makeUpHtml(this.pageData, type))
+			const css = cssStyle(makeUpCss(this.pageData))
 			return beautifier.html(html + script + css, beautifierConf.html)
 		},
 		showJson() {
-			this.assembleFormData()
+			this.assemblePageData()
 			this.jsonDrawerVisible = true
 		},
 		/**
@@ -498,7 +493,6 @@ export default {
 					newTag[key] = this.activeData[key]
 				}
 			})
-			console.log(newTag)
 			this.activeData = newTag
 			this.updateDrawingList(newTag, this.drawingList)
 		},
@@ -519,8 +513,7 @@ export default {
 		refreshJson(data) {
 			this.drawingList = JSON.parse(JSON.stringify(data.fields))
 			delete data.fields
-			this.formConf = data
-			console.log(this.drawingList, this.formConf)
+			this.pageConf = data
 		}
 	}
 }

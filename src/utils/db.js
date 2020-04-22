@@ -4,6 +4,7 @@ const DRAWING_ITEMS_VERSION_KEY = 'DRAWING_ITEMS_VERSION'
 const DRAWING_ID = 'idGlobal'
 const TREE_NODE_ID = 'treeNodeId'
 const FORM_CONF = 'formConf'
+const PAGE_CONF = 'pageConf'
 
 export function getDrawingList() {
   // 加入缓存版本的概念，保证缓存数据与程序匹配
@@ -49,6 +50,16 @@ export function getFormConf() {
   return null
 }
 
+export function getPageConf() {
+	const str = localStorage.getItem(PAGE_CONF)
+	if (str) return JSON.parse(str)
+	return null
+  }
+
 export function saveFormConf(obj) {
   localStorage.setItem(FORM_CONF, JSON.stringify(obj))
 }
+
+export function savePageConf(obj) {
+	localStorage.setItem(PAGE_CONF, JSON.stringify(obj))
+  }

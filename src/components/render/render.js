@@ -130,7 +130,19 @@ const componentChild = {
 			}
 			return list;
 		}
-	}
+	},
+	"el-table": {
+		options(h, conf, key) {
+			const list = [];
+			conf.__slot__.tableColumn.forEach(item => {
+				list.push(
+					<el-table-column label={item.prop} border={item.label} width={item.width}>
+					</el-table-column>
+				);
+			});
+			return list;
+		}
+	},
 };
 
 export default {
