@@ -9,20 +9,7 @@
 <script>
 export default {
 	props: {
-		showField: Boolean,
 		data: Object
-	},
-	watch: {
-		data: {
-			handler(val) {
-				// this.activeData = val;
-				console.log('handler 123')
-			},
-			immediate: true //立即执行handler方法
-		}
-	},
-	mounted() {
-		console.log(this.$listener);
 	}
 }
 </script>

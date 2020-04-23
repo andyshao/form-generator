@@ -1,5 +1,5 @@
 <template>
-	<el-form>
+	<el-form size="small" label-width="90px">
 		<el-form-item v-if="activeData.__vModel__!==undefined" label="字段名">
             <el-input v-model="activeData.__vModel__" placeholder="请输入字段名（v-model）" />
           </el-form-item>
@@ -27,16 +27,6 @@
 export default {
 	props: {
 		activeData: Object
-	},
-	watch: {
-		activeData: {
-			handler(val) {
-				console.log('val:', val)
-			},
-			immediate: true //立即执行handler方法
-		}
-	},
-	mounted() {
 	}
 }
 </script>
