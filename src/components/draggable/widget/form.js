@@ -1,5 +1,5 @@
-import utils from './utils';
-import components from './components';
+import utils from '../utils';
+import components from '../components';
 export default {
 	default: function (h, element, index, parent) {
 		let child = components.renderChildren.apply(this, arguments);

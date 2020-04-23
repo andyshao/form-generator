@@ -1,5 +1,4 @@
-import utils from './utils';
-import components from './components';
+import components from '../components';
 export default {
 	default: function (h, element, index, parent) {
 		const { activeItem } = this.$listeners

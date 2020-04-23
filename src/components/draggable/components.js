@@ -1,4 +1,4 @@
-import layouts from '@/components/draggable-widget/layouts.js';
+import layouts from './layouts.js';
 export default {
 	itemBtns(h, element, index, parent) {
 		const { copyItem, deleteItem } = this.$listeners

@@ -2,7 +2,7 @@ export default [
 	{
 		__config__: {
 			label: "表格",
-			layout: "table",
+			layout: "lwc-table",
 			children: [],
 			tableData: "tableData",
 			tag: "el-table",

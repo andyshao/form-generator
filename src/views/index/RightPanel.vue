@@ -11,7 +11,7 @@
       <el-scrollbar class="right-scrollbar">
         <!-- 组件属性 -->
         <el-form v-show="currentTab==='field' && showField" size="small" label-width="90px">
-          <el-form-item v-if="activeData.__config__.changeTag" label="组件类型">
+          <!-- <el-form-item v-if="activeData.__config__.changeTag" label="组件类型">
             <el-select
               v-model="activeData.__config__.tagIcon"
               placeholder="请选择组件类型"
@@ -49,9 +49,11 @@
           <el-form-item v-if="activeData['end-placeholder']!==undefined" label="结束占位">
             <el-input v-model="activeData['end-placeholder']" placeholder="请输入占位提示" />
           </el-form-item>
-          <el-form-item v-if="activeData.__config__.span!==undefined" label="表单栅格">
+          <el-form-item v-if="activeData.__config__.span!==undefined" label="栅格">
             <el-slider v-model="activeData.__config__.span" :max="24" :min="1" :marks="{12:''}" @change="spanChange" />
-          </el-form-item>
+          </el-form-item> -->
+			<attr-base :data.sync="activeData"></attr-base>
+		  <component v-if="activeData.__config__.layout === 'lwc-table'" :is="`attr_${activeData.__config__.layout}`" :data.sync="activeData" @updateData="updateActiveData"></component>
 
 			<!--布局组件 Start-->
           <el-form-item v-if="activeData.__config__.layout==='rowFormItem'" label="栅格间隔">
@@ -691,6 +693,8 @@ import {
 } from '@/components/generator/config'
 import { savePageConf } from '@/utils/db'
 import styleOptions from '@/utils/styleOptions'
+import AttrTable from './right-panel/attribute/table';
+import AttrBase from './right-panel/attribute/base';
 const dateTimeFormat = {
   date: 'yyyy-MM-dd',
   week: 'yyyy 第 WW 周',
@@ -704,7 +708,8 @@ const dateTimeFormat = {
 export default {
   components: {
     TreeNodeDialog,
-    IconsDialog
+	IconsDialog,
+	'attr_lwc-table': AttrTable
   },
   props: ['showField', 'activeData', 'pageConf'],
   data() {
@@ -862,6 +867,9 @@ export default {
     }
   },
   methods: {
+	  updateActiveData(avtiveData) {
+		  console.log('avtiveData:', avtiveData)
+	  },
     addReg() {
       this.activeData.__config__.regList.push({
         pattern: '',
@@ -961,9 +969,9 @@ export default {
       this.$set(this.activeData, 'value-format', valueFormat)
       this.$set(this.activeData, 'format', val)
     },
-    spanChange(val) {
-      this.pageConf.span = val
-    },
+    // spanChange(val) {
+    //   this.pageConf.span = val
+    // },
     multipleChange(val) {
       this.$set(this.activeData.__config__, 'defaultValue', val ? [] : '')
     },
@@ -995,11 +1003,11 @@ export default {
     setIcon(val) {
       this.activeData[this.currentIconModel] = val
     },
-    tagChange(tagIcon) {
-      let target = inputComponents.find(item => item.__config__.tagIcon === tagIcon)
-      if (!target) target = selectComponents.find(item => item.__config__.tagIcon === tagIcon)
-      this.$emit('tag-change', target)
-    }
+    // tagChange(tagIcon) {
+    //   let target = inputComponents.find(item => item.__config__.tagIcon === tagIcon)
+    //   if (!target) target = selectComponents.find(item => item.__config__.tagIcon === tagIcon)
+    //   this.$emit('tag-change', target)
+    // }
   }
 }
 </script>

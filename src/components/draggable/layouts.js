@@ -1,9 +1,8 @@
 import * as DESIGN_PROPERTIES from '@/config/design_properties.js';
-
-import table from '@/components/draggable-widget/table.js';
-import layout from '@/components/draggable-widget/layout.js';
-import form from '@/components/draggable-widget/form.js';
-import colFormItem from '@/components/draggable-widget/col-form-item.js';
+import table from './widget/table.js';
+import layout from './widget/layout.js';
+import form from './widget/form.js';
+import colFormItem from './widget/col-form-item.js';
 
 export default {
 	[DESIGN_PROPERTIES.LAYOUT_TYPE_COL_FORM_ITEM]: colFormItem.default,

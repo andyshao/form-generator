@@ -1,13 +1,11 @@
 <script>
 import draggable from 'vuedraggable'
 import render from '@/components/render/render'
-
-import layouts from '@/components/draggable-widget/layouts.js';
+import layouts from '@/components/draggable/layouts.js';
 
 function layoutIsNotFound() {
 	throw new Error(`没有与${this.element.__config__.layout}匹配的layout`)
 }
-
 
 export default {
 	components: {
